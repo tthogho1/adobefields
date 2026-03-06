@@ -1,0 +1,7 @@
+# Ignore environment and virtual env
+.env
+.venv/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
