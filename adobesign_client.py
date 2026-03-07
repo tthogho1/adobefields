@@ -7,6 +7,10 @@ from pathlib import Path
 import requests
 
 log = logging.getLogger(__name__)
+from dotenv import load_dotenv
+
+# Load .env values into environment early
+load_dotenv()
 
 
 def get_access_token() -> str:

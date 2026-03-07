@@ -5,27 +5,7 @@ import sys
 from pathlib import Path
 import os
 import importlib.util
-
-
-def load_env(path: str = ".env") -> None:
-    """A minimal .env parser (ignore comments and blank lines)."""
-    p = Path(path)
-    if not p.exists():
-        return
-    for raw in p.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" not in line:
-            continue
-        key, val = line.split("=", 1)
-        key = key.strip()
-        val = val.strip()
-        if (val.startswith('"') and val.endswith('"')) or (
-            val.startswith("'") and val.endswith("'")
-        ):
-            val = val[1:-1]
-        os.environ.setdefault(key, val)
+from dotenv import load_dotenv
 
 
 def load_client_module():
@@ -48,7 +28,7 @@ def main() -> None:
     )
     log = logging.getLogger(__name__)
 
-    load_env()
+    load_dotenv()
     client = load_client_module()
 
     token = client.get_access_token()
