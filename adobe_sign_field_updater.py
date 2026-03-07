@@ -4,39 +4,14 @@ import logging
 import sys
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 import requests
 import importlib.util
 
 
-# ── Load environment variables from .env ──────────────────────────────────────
-def load_env(path: str = ".env") -> None:
-    """A minimal .env parser.
-    If the file exists, read KEY=VALUE lines and set environment variables
-    only when they are not already present. Ignore comment lines (starting
-    with '#') and blank lines.
-    """
-    p = Path(path)
-    if not p.exists():
-        return
-    for raw in p.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        if "=" not in line:
-            continue
-        key, val = line.split("=", 1)
-        key = key.strip()
-        val = val.strip()
-        if (val.startswith('"') and val.endswith('"')) or (
-            val.startswith("'") and val.endswith("'")
-        ):
-            val = val[1:-1]
-        os.environ.setdefault(key, val)
-
-
 # ── Configuration values (read from environment; populate .env as needed)
-load_env()
+load_dotenv()
 REFRESH_TOKEN = os.getenv("REFRESH_TOKEN")
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
