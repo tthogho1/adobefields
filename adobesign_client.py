@@ -44,6 +44,8 @@ def fetch_form_fields(library_id: str, headers: dict) -> dict:
     """GET libraryDocuments/{library_id}/formFields and return the parsed JSON."""
     API_BASE_URL = os.getenv("API_BASE_URL")
     url = f"{API_BASE_URL}/libraryDocuments/{library_id}/formFields"
+    # Debug: print the library_id before making the request
+    print(f"library_id: {library_id}")
     resp = requests.get(url, headers=headers)
     if resp.status_code == 401:
         log.error("Unauthorized (HTTP 401): access token is invalid or expired")
@@ -118,3 +120,77 @@ def list_library_documents(headers: dict) -> list[dict]:
 
     log.info("Found %d library documents", len(out))
     return out
+
+
+def pdf_template_upload(file_path: str, headers: dict) -> dict:
+    """Upload a PDF to the Adobe Sign `transientDocuments` endpoint.
+
+    Returns the JSON response (including `transientDocumentId`) on success.
+    The caller should provide `headers` containing an Authorization bearer token.
+    """
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    url = f"{API_BASE_URL}/transientDocuments"
+
+    p = Path(file_path)
+    if not p.exists():
+        log.error("File not found: %s", file_path)
+        sys.exit(1)
+
+    log.info("Uploading transient document: %s", file_path)
+    with p.open("rb") as fh:
+        files = {"File": (p.name, fh, "application/pdf")}
+        data = {"File-Name": p.name, "Mime-Type": "application/pdf"}
+        resp = requests.post(url, headers=headers, files=files, data=data)
+
+    if resp.status_code not in (200, 201):
+        log.error("Transient document upload failed (HTTP %s): %s", resp.status_code, resp.text)
+        sys.exit(1)
+
+    try:
+        return resp.json()
+    except Exception:
+        log.error("Failed to parse JSON response from transient upload: %s", resp.text)
+        sys.exit(1)
+
+
+def pdf_register_template(transient_document_id: str, name: str, headers: dict, *, sharing_mode: str = "ACCOUNT", state: str = "ACTIVE", template_types: list[str] | None = None) -> dict:
+    """Register a transient document as a library/template.
+
+    Parameters:
+    - `transient_document_id`: the transientDocumentId returned from `pdf_template_upload`.
+    - `name`: the template name provided by the user.
+    - `headers`: headers dict including Authorization bearer token.
+    - `sharing_mode`: one of "ACCOUNT" or "GROUP" (default "ACCOUNT").
+    - `state`: one of "ACTIVE", "DRAFT", "AUTHORING" (default "ACTIVE").
+    - `template_types`: list of template types (default ["DOCUMENT"]).
+
+    Returns the parsed JSON response on success.
+    """
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    url = f"{API_BASE_URL}/libraryDocuments"
+
+    if template_types is None:
+        template_types = ["DOCUMENT"]
+
+    body = {
+        "fileInfos": [{"transientDocumentId": transient_document_id}],
+        "name": name,
+        "sharingMode": sharing_mode,
+        "state": state,
+        "templateTypes": template_types,
+    }
+
+    log.info("Registering template '%s' from transient document %s", name, transient_document_id)
+    resp = requests.post(url, headers={**headers, "Content-Type": "application/json"}, json=body)
+
+    if resp.status_code not in (200, 201):
+        log.error("Register template failed (HTTP %s): %s", resp.status_code, resp.text)
+        sys.exit(1)
+
+    try:
+        return resp.json()
+    except Exception:
+        log.error("Failed to parse JSON response from register template: %s", resp.text)
+        sys.exit(1)
+
+
