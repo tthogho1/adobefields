@@ -26,5 +26,18 @@
         "port": 5678
       }
     }
+    ,
+    {
+      "name": "Python: adobe_sign_field_updater (fields.txt)",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/adobe_sign_field_updater.py",
+      "args": [
+        "CBJCHBCAABAAj4RkpThC5mQH4JLjKWV1bapAV7wsw1jd",
+        "fields.txt"
+      ],
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
   ]
 }
