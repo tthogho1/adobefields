@@ -5,3 +5,5 @@
 # Python artifacts
 __pycache__/
 *.py[cod]
+upload_pdf.bat
+fields.txt
