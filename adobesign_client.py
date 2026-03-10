@@ -143,7 +143,11 @@ def pdf_template_upload(file_path: str, headers: dict) -> dict:
         resp = requests.post(url, headers=headers, files=files, data=data)
 
     if resp.status_code not in (200, 201):
-        log.error("Transient document upload failed (HTTP %s): %s", resp.status_code, resp.text)
+        log.error(
+            "Transient document upload failed (HTTP %s): %s",
+            resp.status_code,
+            resp.text,
+        )
         sys.exit(1)
 
     try:
@@ -153,7 +157,15 @@ def pdf_template_upload(file_path: str, headers: dict) -> dict:
         sys.exit(1)
 
 
-def pdf_register_template(transient_document_id: str, name: str, headers: dict, *, sharing_mode: str = "ACCOUNT", state: str = "ACTIVE", template_types: list[str] | None = None) -> dict:
+def pdf_register_template(
+    transient_document_id: str,
+    name: str,
+    headers: dict,
+    *,
+    sharing_mode: str = "ACCOUNT",
+    state: str = "ACTIVE",
+    template_types: list[str] | None = None,
+) -> dict:
     """Register a transient document as a library/template.
 
     Parameters:
@@ -180,8 +192,14 @@ def pdf_register_template(transient_document_id: str, name: str, headers: dict, 
         "templateTypes": template_types,
     }
 
-    log.info("Registering template '%s' from transient document %s", name, transient_document_id)
-    resp = requests.post(url, headers={**headers, "Content-Type": "application/json"}, json=body)
+    log.info(
+        "Registering template '%s' from transient document %s",
+        name,
+        transient_document_id,
+    )
+    resp = requests.post(
+        url, headers={**headers, "Content-Type": "application/json"}, json=body
+    )
 
     if resp.status_code not in (200, 201):
         log.error("Register template failed (HTTP %s): %s", resp.status_code, resp.text)
@@ -194,3 +212,34 @@ def pdf_register_template(transient_document_id: str, name: str, headers: dict, 
         sys.exit(1)
 
 
+def get_document_info(agreement_id: str, headers: dict) -> dict:
+    """Fetch document JSON information for a specified agreement ID using Adobe Sign API.
+
+    Parameters:
+    - `agreement_id`: The ID of the agreement to fetch information for.
+    - `headers`: Headers dict including Authorization bearer token.
+
+    Returns the parsed JSON response on success.
+    """
+    API_BASE_URL = os.getenv("API_BASE_URL")
+    url = f"{API_BASE_URL}/agreements/{agreement_id}"
+
+    log.info("Fetching document information for agreement ID: %s", agreement_id)
+    resp = requests.get(url, headers=headers)
+
+    if resp.status_code == 401:
+        log.error("Unauthorized (HTTP 401): access token is invalid or expired")
+        sys.exit(1)
+    if resp.status_code != 200:
+        log.error(
+            "GET document information failed (HTTP %s): %s", resp.status_code, resp.text
+        )
+        sys.exit(1)
+
+    try:
+        return resp.json()
+    except Exception:
+        log.error(
+            "Failed to parse JSON response from document information: %s", resp.text
+        )
+        sys.exit(1)

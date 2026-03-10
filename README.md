@@ -40,12 +40,24 @@ The script expects the following variables in the environment:
 
 ## Usage
 
-List templates (prints `id` and `name`):
+### List templates (prints `id` and `name`):
 
 ```powershell
 python adobefields\adobe_list_templates.py
 # JSON output:
 python adobefields\adobe_list_templates.py -j
+```
+
+### Get document information:
+
+Fetch document information for a specified agreement ID. The script supports two output formats: `json` (default) and `table`.
+
+```powershell
+python adobefields\get_document_info.py <agreement_id> [output_format]
+
+# Example usage:
+python adobefields\get_document_info.py CBJCHBCAABAAQ37v2FBrQUAhVHMVMPvP-oMPpEQiFthU
+python adobefields\get_document_info.py CBJCHBCAABAAQ37v2FBrQUAhVHMVMPvP-oMPpEQiFthU table
 ```
 
 Update field alignments:
