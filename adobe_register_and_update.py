@@ -17,6 +17,7 @@ import sys
 from pathlib import Path
 from typing import Tuple, List
 from datetime import date
+from copy import deepcopy
 
 from dotenv import load_dotenv
 
@@ -56,6 +57,66 @@ def update_alignments(data: dict, target_names: List[str]) -> Tuple[dict, int]:
         if name not in found_set:
             log.warning("Field '%s' not found in document", name)
     log.info("Updated %d/%d fields alignment to RIGHT", updated, len(target_names))
+    # Append a signature field if not already present
+    SIGNATURE_FIELD = {
+        "backgroundColor": "",
+        "borderColor": "",
+        "borderStyle": "SOLID",
+        "borderWidth": -1.0,
+        "displayLabel": "",
+        "visible": True,
+        "inputType": "SIGNATURE",
+        "tooltip": "",
+        "fontColor": "#000000",
+        "fontName": "Helvetica",
+        "fontSize": -1.0,
+        "alignment": "LEFT",
+        "displayFormat": "",
+        "displayFormatType": "DEFAULT",
+        "masked": False,
+        "maskingText": "*",
+        "radioCheckType": "CIRCLE",
+        "conditionalAction": {"anyOrAll": "ANY", "action": "SHOW"},
+        "contentType": "SIGNATURE",
+        "defaultValue": "",
+        "readOnly": False,
+        "valueExpression": "",
+        "calculated": False,
+        "urlOverridable": False,
+        "required": True,
+        "minLength": -1,
+        "maxLength": -1,
+        "minValue": -1.0,
+        "maxValue": -1.0,
+        "validationErrMsg": "",
+        "validation": "NONE",
+        "currency": "",
+        "origin": "AUTHORED",
+        "signerIndex": 0,
+        "name": "署名フィールド 1",
+        "locations": [
+            {
+                "pageNumber": 1,
+                "top": 150.84399693806972,
+                "left": 31.57199935913086,
+                "width": 172.87920018513998,
+                "height": 36.0,
+            }
+        ],
+        "assignee": "recipient0",
+    }
+
+    fields_list = data.setdefault("fields", [])
+    exists = any(f.get("name") == SIGNATURE_FIELD["name"] for f in fields_list)
+    if not exists:
+        fields_list.append(deepcopy(SIGNATURE_FIELD))
+        log.info("Appended signature field '%s' to fields", SIGNATURE_FIELD["name"])
+    else:
+        log.info(
+            "Signature field '%s' already present, skipping append",
+            SIGNATURE_FIELD["name"],
+        )
+
     return data, updated
 
 

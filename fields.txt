@@ -34,3 +34,6 @@ monthlyLimitAgreedMileage
 mileageSettlementRate
 interiorExteriorPenaltyAmount
 interiorLimitExteriorPenaltyAmount
+bankCode
+bankBranchCode
+specialAgreementFlag

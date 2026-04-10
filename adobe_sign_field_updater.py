@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 
 import requests
 import importlib.util
+from copy import deepcopy
 
 
 # ── Configuration values (read from environment; populate .env as needed)
@@ -40,6 +41,56 @@ log = logging.getLogger(__name__)
 # Request functions are provided by adobesign_client.py and loaded above.
 
 
+# Static signature field to append when updating fields
+SIGNATURE_FIELD = {
+    "backgroundColor": "",
+    "borderColor": "",
+    "borderStyle": "SOLID",
+    "borderWidth": -1.0,
+    "displayLabel": "",
+    "visible": True,
+    "inputType": "SIGNATURE",
+    "tooltip": "",
+    "fontColor": "#000000",
+    "fontName": "Helvetica",
+    "fontSize": -1.0,
+    "alignment": "LEFT",
+    "displayFormat": "",
+    "displayFormatType": "DEFAULT",
+    "masked": False,
+    "maskingText": "*",
+    "radioCheckType": "CIRCLE",
+    "conditionalAction": {"anyOrAll": "ANY", "action": "SHOW"},
+    "contentType": "SIGNATURE",
+    "defaultValue": "",
+    "readOnly": False,
+    "valueExpression": "",
+    "calculated": False,
+    "urlOverridable": False,
+    "required": True,
+    "minLength": -1,
+    "maxLength": -1,
+    "minValue": -1.0,
+    "maxValue": -1.0,
+    "validationErrMsg": "",
+    "validation": "NONE",
+    "currency": "",
+    "origin": "AUTHORED",
+    "signerIndex": 0,
+    "name": "署名フィールド 1",
+    "locations": [
+        {
+            "pageNumber": 1,
+            "top": 150.84399693806972,
+            "left": 31.57199935913086,
+            "width": 172.87920018513998,
+            "height": 36.0,
+        }
+    ],
+    "assignee": "recipient0",
+}
+
+
 def read_field_names(field_file: str) -> list[str]:
     """Read a file containing one field name per line and return the list."""
     path = Path(field_file)
@@ -55,7 +106,9 @@ def read_field_names(field_file: str) -> list[str]:
     return names
 
 
-def update_alignments(data: dict, target_names: list[str]) -> tuple[dict, int]:
+def update_alignments(
+    data: dict, target_names: list[str], add_signature: bool = True
+) -> tuple[dict, int]:
     """
     For every field in data["fields"] whose `name` is in `target_names`,
     set its `alignment` to "RIGHT". Return the modified data and the
@@ -77,6 +130,21 @@ def update_alignments(data: dict, target_names: list[str]) -> tuple[dict, int]:
             log.warning("Field '%s' not found in document", name)
 
     log.info("Updated %d/%d fields alignment to RIGHT", updated, len(target_names))
+    # Optionally add a signature field if not already present
+    if add_signature:
+        fields_list = data.setdefault("fields", [])
+        exists = any(f.get("name") == SIGNATURE_FIELD.get("name") for f in fields_list)
+        if not exists:
+            fields_list.append(deepcopy(SIGNATURE_FIELD))
+            log.info(
+                "Appended signature field '%s' to fields", SIGNATURE_FIELD.get("name")
+            )
+        else:
+            log.info(
+                "Signature field '%s' already present, skipping append",
+                SIGNATURE_FIELD.get("name"),
+            )
+
     return data, updated
 
 
