@@ -89,6 +89,7 @@ Environment (required): `REFRESH_TOKEN`, `CLIENT_ID`, `CLIENT_SECRET`,
 `OAUTH_URL`.
 
 URL configuration options:
+
 - `API_BASE_URL` (recommended): full base URL including `/api/rest/vX`.
 - or set `API_HOST` and `API_VERSION` (defaults: `https://secure.na1.adobesign.com`, `v5`).
 
