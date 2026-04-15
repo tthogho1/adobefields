@@ -7,3 +7,4 @@ __pycache__/
 *.py[cod]
 upload_pdf.bat
 fields.txt
+Agreement.json
