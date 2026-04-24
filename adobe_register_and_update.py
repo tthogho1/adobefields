@@ -57,6 +57,10 @@ def update_alignments(data: dict, target_names: List[str]) -> Tuple[dict, int]:
         if name not in found_set:
             log.warning("Field '%s' not found in document", name)
     log.info("Updated %d/%d fields alignment to RIGHT", updated, len(target_names))
+    return data, updated
+
+
+def append_signature(data: dict) -> dict:
     # Append a signature field if not already present
     SIGNATURE_FIELD = {
         "backgroundColor": "",
@@ -105,7 +109,6 @@ def update_alignments(data: dict, target_names: List[str]) -> Tuple[dict, int]:
         ],
         "assignee": "recipient0",
     }
-
     fields_list = data.setdefault("fields", [])
     exists = any(f.get("name") == SIGNATURE_FIELD["name"] for f in fields_list)
     if not exists:
@@ -116,8 +119,23 @@ def update_alignments(data: dict, target_names: List[str]) -> Tuple[dict, int]:
             "Signature field '%s' already present, skipping append",
             SIGNATURE_FIELD["name"],
         )
+    return data
 
-    return data, updated
+
+def update_fontName(data: dict) -> dict:
+    fields = data.get("fields", [])
+    updated = 0
+    for field in fields:
+        if field.get("inputType") == "TEXT_FIELD":
+            field["fontName"] = "Source Sans Pro"
+            updated += 1
+        elif field.get("inputType") == "MULTILINE":
+            field["fontName"] = "Source Sans Pro"
+            updated += 1
+        else :
+            log.info("Field '%s' is excluded because of other inputType", field.get("name"))
+    log.info("Updated %d/%d fields fontName to Source Sans Pro", updated , len(fields))
+    return data
 
 
 def extract_transient_id(upload_resp: dict) -> str | None:
@@ -231,6 +249,8 @@ def main() -> None:
         print(json.dumps(register_resp, ensure_ascii=False, indent=2))
         return
 
+    data = append_signature(data)
+    data = update_fontName(data)
     data, updated_count = update_alignments(data, target_names)
 
     # 6. Save modified JSON
