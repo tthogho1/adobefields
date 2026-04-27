@@ -126,10 +126,7 @@ def update_fontName(data: dict) -> dict:
     fields = data.get("fields", [])
     updated = 0
     for field in fields:
-        if field.get("inputType") == "TEXT_FIELD":
-            field["fontName"] = "Source Sans Pro"
-            updated += 1
-        elif field.get("inputType") == "MULTILINE":
+        if field.get("inputType") == "TEXT_FIELD" or field.get("inputType") == "MULTILINE":
             field["fontName"] = "Source Sans Pro"
             updated += 1
         else :
