@@ -247,7 +247,7 @@ def main() -> None:
         return
 
     data = append_signature(data)
-    data = update_fontName(data)
+    # data = update_fontName(data)
     data, updated_count = update_alignments(data, target_names)
 
     # 6. Save modified JSON
